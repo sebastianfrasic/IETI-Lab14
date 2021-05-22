@@ -8,4 +8,10 @@
     <string name="no_location_data_provided">No location data provided</string>
     <string name="service_not_available">service not available</string>
     <string name="invalid_lat_long_used">invalid lat long used</string>
+    <string name="add_icon">Add Icon</string>
+    <string name="title_activity_add_location">AddLocationActivity</string>
+    <string name="sumbit">Add Location</string>
+    <string name="empty_field_error">Este campo es obligatorio</string>
+    <string name="response">Location</string>
+    <string name="my_location">My Location</string>
 </resources>

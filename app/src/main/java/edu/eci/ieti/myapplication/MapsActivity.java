@@ -5,12 +5,15 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
 import android.view.View;
 import android.widget.EditText;
 
@@ -26,6 +29,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private final int ACCESS_LOCATION_PERMISSION_CODE = 44;
+    private final int ADD_LOCATION_CODE = 99;
     private FusedLocationProviderClient fusedLocationClient;
     private GoogleMap googleMap;
     private EditText address;
@@ -88,7 +92,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         .addOnSuccessListener(this, location -> {
                             // Got last known location. In some rare situations this can be null.
                             if (location != null) {
-                                addMarkerAndZoom(location, "My Location", 15);
+                                addMarkerAndZoom(location, getString(R.string.my_location), 15);
                             }
                         });
             } else {
@@ -109,7 +113,6 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     }
 
     public void addMarkerAndZoom(Location location, String title, int zoom) {
-        System.out.println(location.getLatitude() + ", " + location.getLongitude());
         LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
         googleMap.addMarker(new MarkerOptions().position(myLocation).title(title));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, zoom));
@@ -119,11 +122,16 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         startFetchAddressIntentService();
     }
 
+    public void onAddLocationClicked(View view) {
+        Intent intent = new Intent(this, AddLocationActivity.class);
+        startActivityForResult(intent, ADD_LOCATION_CODE);
+    }
+
     public void startFetchAddressIntentService() {
         fusedLocationClient.getLastLocation()
                 .addOnSuccessListener(this, location -> {
                     if (location != null) {
-                        AddressResultReceiver addressResultReceiver = new AddressResultReceiver(new Handler());
+                        AddressResultReceiver addressResultReceiver = new AddressResultReceiver(new Handler(Looper.getMainLooper()));
                         addressResultReceiver.setAddressResultListener(address -> runOnUiThread(() -> {
                             MapsActivity.this.address.setText(address);
                             MapsActivity.this.address.setVisibility(View.VISIBLE);
@@ -134,5 +142,19 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                         startService(intent);
                     }
                 });
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == ADD_LOCATION_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                PersonalizedLocation result = (PersonalizedLocation) data.getExtras().get(getString(R.string.response));
+                Location location = new Location(LocationManager.GPS_PROVIDER);
+                location.setLatitude(result.getLatitude());
+                location.setLongitude(result.getLongitude());
+                addMarkerAndZoom(location, String.format("%s: %s", result.getName(), result.getDescription()), 15);
+            }
+        }
     }
 }

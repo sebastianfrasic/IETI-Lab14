@@ -1,35 +1,55 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical"
-    tools:context="edu.eci.ieti.myapplication.MapsActivity">
-	
-	<EditText
-        android:id="@+id/address"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:padding="10dp"
-        android:text="@string/address"
-        android:textSize="18sp"
-        android:visibility="gone"
-        tools:visibility="visible" />
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:onClick="onAddLocationClicked"
+	android:orientation="vertical"
+	tools:context="edu.eci.ieti.myapplication.MapsActivity">
 
-	<fragment
+	<EditText
+		android:id="@+id/address"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center"
+		android:importantForAutofill="no"
+		android:inputType="text"
+		android:padding="10dp"
+		android:text="@string/address"
+		android:textSize="18sp"
+		android:visibility="gone"
+		tools:visibility="visible" />
+
+	<androidx.fragment.app.FragmentContainerView
 		android:id="@+id/map"
 		android:name="com.google.android.gms.maps.SupportMapFragment"
 		android:layout_width="match_parent"
 		android:layout_height="631dp"
 		tools:context=".MapsActivity" />
 
-	<Button
-		android:id="@+id/button"
+	<LinearLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:onClick="onFindAddressClicked"
-		android:text="@string/firstButton" />
+		android:orientation="horizontal">
+
+		<Button
+			android:id="@+id/button"
+			android:layout_width="357dp"
+			android:layout_height="wrap_content"
+			android:onClick="onFindAddressClicked"
+			android:text="@string/firstButton" />
+
+		<com.google.android.material.floatingactionbutton.FloatingActionButton
+			android:id="@+id/addButton"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:clickable="true"
+			android:contentDescription="@string/add_icon"
+			android:focusable="true"
+			android:onClick="onAddLocationClicked"
+			android:src="@android:drawable/ic_input_add" />
+
+	</LinearLayout>
 
 </LinearLayout>
