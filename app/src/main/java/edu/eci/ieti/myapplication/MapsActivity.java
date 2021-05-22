@@ -6,9 +6,13 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
+import android.os.Handler;
+import android.view.View;
+import android.widget.EditText;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -18,18 +22,19 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private final int ACCESS_LOCATION_PERMISSION_CODE = 44;
     private FusedLocationProviderClient fusedLocationClient;
     private GoogleMap googleMap;
+    private EditText address;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_maps);
+        address = findViewById(R.id.address);
         // Obtain the SupportMapFragment and get notified when the map is ready to be used.
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
@@ -92,7 +97,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         }
     }
 
-    public static boolean hasPermissions(Context context, String[] permissions) {
+    public boolean hasPermissions(Context context, String[] permissions) {
         boolean hasPermission = true;
         for (String permission : permissions) {
             if (ContextCompat.checkSelfPermission(context, permission) == PackageManager.PERMISSION_DENIED) {
@@ -108,5 +113,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         LatLng myLocation = new LatLng(location.getLatitude(), location.getLongitude());
         googleMap.addMarker(new MarkerOptions().position(myLocation).title(title));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(myLocation, zoom));
+    }
+
+    public void onFindAddressClicked(View view) {
+        startFetchAddressIntentService();
+    }
+
+    public void startFetchAddressIntentService() {
+        fusedLocationClient.getLastLocation()
+                .addOnSuccessListener(this, location -> {
+                    if (location != null) {
+                        AddressResultReceiver addressResultReceiver = new AddressResultReceiver(new Handler());
+                        addressResultReceiver.setAddressResultListener(address -> runOnUiThread(() -> {
+                            MapsActivity.this.address.setText(address);
+                            MapsActivity.this.address.setVisibility(View.VISIBLE);
+                        }));
+                        Intent intent = new Intent(MapsActivity.this, FetchAddressIntentService.class);
+                        intent.putExtra(FetchAddressIntentService.RECEIVER, addressResultReceiver);
+                        intent.putExtra(FetchAddressIntentService.LOCATION_DATA_EXTRA, location);
+                        startService(intent);
+                    }
+                });
     }
 }
